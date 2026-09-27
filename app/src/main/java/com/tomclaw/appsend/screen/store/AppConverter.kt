@@ -38,6 +38,7 @@ class AppConverterImpl(
             exclusive = appEntity.exclusive,
             openSource = !appEntity.sourceUrl.isNullOrEmpty(),
             isAbiCompatible = isAbiCompatible,
+            description = appEntity.resolvedDescription,
             isInstalled = installedVersionCode != NOT_INSTALLED,
             isUpdatable = installedVersionCode < appEntity.verCode,
             isNew = (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) - appEntity.time) <

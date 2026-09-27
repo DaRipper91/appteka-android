@@ -8,6 +8,10 @@ class SimpleRecyclerAdapter(
     private val binder: ItemBinder
 ) : RecyclerView.Adapter<BaseItemViewHolder>() {
 
+    init {
+        stateRestorationPolicy = StateRestorationPolicy.PREVENT_WHEN_EMPTY
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseItemViewHolder {
         return binder.createViewHolder(parent, viewType)
     }

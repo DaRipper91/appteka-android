@@ -91,7 +91,7 @@ class StoreViewImpl(
     private val recycler: RecyclerView = view.findViewById(R.id.recycler)
     private val error: TextView = view.findViewById(R.id.error_text)
     private val retryButton: View = view.findViewById(R.id.button_retry)
-    private val categoryChip: Chip = filters.findViewById(R.id.chip_category)
+    private val categoryChips: com.google.android.material.chip.ChipGroup = filters.findViewById(R.id.category_chips)
     private val openSourceChip: Chip = filters.findViewById(R.id.chip_open_source)
     private val exclusiveChip: Chip = filters.findViewById(R.id.chip_exclusive)
     private val contentFilterChip: Chip = filters.findViewById(R.id.chip_content_filter)
@@ -104,6 +104,7 @@ class StoreViewImpl(
     private val contentFilterRelay = PublishRelay.create<Unit>()
 
     private var categories: List<CategoryDropdownItem> = emptyList()
+    private val categoryChipMap = mutableMapOf<Int, Chip>()
 
     init {
         val orientation = RecyclerView.VERTICAL
@@ -118,14 +119,22 @@ class StoreViewImpl(
 
         retryButton.clicks(retryRelay)
 
-        categoryChip.setOnClickListener { showCategoryPicker() }
         // Filter chips are checkable, so a click has already toggled the
         // state by the time we read it; emit the new value.
-        openSourceChip.setOnClickListener { openSourceRelay.accept(openSourceChip.isChecked) }
-        exclusiveChip.setOnClickListener { exclusiveRelay.accept(exclusiveChip.isChecked) }
+        openSourceChip.setOnClickListener {
+            openSourceChip.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+            openSourceRelay.accept(openSourceChip.isChecked)
+        }
+        exclusiveChip.setOnClickListener {
+            exclusiveChip.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+            exclusiveRelay.accept(exclusiveChip.isChecked)
+        }
         // Not a filter to toggle here — it says the account has one, and
         // takes you to where it is changed.
-        contentFilterChip.setOnClickListener { contentFilterRelay.accept(Unit) }
+        contentFilterChip.setOnClickListener {
+            contentFilterChip.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+            contentFilterRelay.accept(Unit)
+        }
     }
 
     override fun showContentFilter(flags: List<ContentFlag>) {
@@ -164,15 +173,33 @@ class StoreViewImpl(
 
     override fun showCategories(items: List<CategoryDropdownItem>) {
         categories = items
+        categoryChips.removeAllViews()
+        categoryChipMap.clear()
+
+        items.forEach { item ->
+            val chip = Chip(context, null, com.google.android.material.R.attr.chipStyle).apply {
+                id = View.generateViewId()
+                text = item.title
+                isCheckable = true
+                setEnsureMinTouchTargetSize(true)
+                when {
+                    item.iconSvg != null -> chipIcon = svgToDrawable(item.iconSvg, context.resources)
+                    item.iconRes != 0 -> setChipIconResource(item.iconRes)
+                    else -> setChipIconResource(R.drawable.ic_category)
+                }
+                setOnClickListener {
+                    performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+                    categorySelectedRelay.accept(item.id)
+                }
+            }
+            categoryChipMap[item.id] = chip
+            categoryChips.addView(chip)
+        }
     }
 
     override fun setSelectedCategory(item: CategoryDropdownItem) {
-        categoryChip.text = item.title
-        when {
-            item.iconSvg != null -> categoryChip.chipIcon = svgToDrawable(item.iconSvg, context.resources)
-            item.iconRes != 0 -> categoryChip.setChipIconResource(item.iconRes)
-            else -> categoryChip.setChipIconResource(R.drawable.ic_category)
-        }
+        val chip = categoryChipMap[item.id] ?: return
+        chip.isChecked = true
     }
 
     override fun setFilters(openSource: Boolean, exclusive: Boolean) {

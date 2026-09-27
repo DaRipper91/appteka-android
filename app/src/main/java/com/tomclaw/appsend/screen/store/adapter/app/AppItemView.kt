@@ -49,6 +49,10 @@ interface AppItemView : ItemView {
 
     fun setCategory(category: CategoryItem?)
 
+    fun setDescription(description: String?)
+
+    fun setA11yDescription(description: String)
+
     fun setOnClickListener(listener: (() -> Unit)?)
 
     fun setClickable(clickable: Boolean)
@@ -61,6 +65,7 @@ class AppItemViewHolder(view: View) : BaseItemViewHolder(view), AppItemView {
     private val icon: ImageView = view.findViewById(R.id.app_icon)
     private val title: TextView = view.findViewById(R.id.app_name)
     private val version: TextView = view.findViewById(R.id.app_version)
+    private val description: TextView? = view.findViewById(R.id.app_short_description)
     private val size: TextView = view.findViewById(R.id.app_size)
     private val rating: TextView = view.findViewById(R.id.app_rating)
     private val ratingIcon: View = view.findViewById(R.id.rating_icon)
@@ -161,6 +166,14 @@ class AppItemViewHolder(view: View) : BaseItemViewHolder(view), AppItemView {
             categoryIcon.setImageDrawable(null)
             categoryTitle.setText(R.string.category_not_set)
         }
+    }
+
+    override fun setDescription(description: String?) {
+        this.description?.bind(description)
+    }
+
+    override fun setA11yDescription(description: String) {
+        itemView.contentDescription = description
     }
 
     override fun setOnClickListener(listener: (() -> Unit)?) {

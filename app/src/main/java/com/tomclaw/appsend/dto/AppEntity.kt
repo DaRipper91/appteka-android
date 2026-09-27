@@ -45,4 +45,15 @@ data class AppEntity(
     // defaults to false for older servers / foreign lists.
     @SerializedName("declined")
     val declined: Boolean = false,
-) : Parcelable
+    @SerializedName("description")
+    val description: String? = null,
+    @SerializedName("short_description")
+    val shortDescription: String? = null,
+    @SerializedName("ai_short_description")
+    val aiShortDescription: String? = null,
+) : Parcelable {
+    val resolvedDescription: String?
+        get() = aiShortDescription?.takeIf { it.isNotBlank() }
+            ?: shortDescription?.takeIf { it.isNotBlank() }
+            ?: description?.takeIf { it.isNotBlank() }
+}

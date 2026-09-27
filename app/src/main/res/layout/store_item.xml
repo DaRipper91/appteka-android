@@ -52,9 +52,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="18dp"
                     android:layout_gravity="center_vertical"
-                    android:contentDescription="@string/ratings"
-                    android:paddingStart="-1dp"
-                    android:paddingLeft="-1dp"
+                    android:importantForAccessibility="no"
+                    android:paddingStart="0dp"
+                    android:paddingLeft="0dp"
                     android:paddingEnd="2dp"
                     android:paddingRight="2dp"
                     android:src="@drawable/ic_new_box"
@@ -88,6 +88,21 @@
 
             </LinearLayout>
 
+            <TextView
+                android:id="@+id/app_short_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="2dp"
+                android:ellipsize="end"
+                android:includeFontPadding="false"
+                android:maxLines="2"
+                android:textColor="?text_secondary_color"
+                android:textSize="13sp"
+                android:visibility="gone"
+                tools:text="Open source package manager and alternative application catalog."
+                tools:visibility="visible" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -101,10 +116,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="start|center_vertical"
-                    android:ellipsize="marquee"
+                    android:ellipsize="end"
                     android:includeFontPadding="false"
-                    android:marqueeRepeatLimit="marquee_forever"
-                    android:scrollHorizontally="true"
+                    android:maxLines="1"
                     android:singleLine="true"
                     android:textColor="?text_secondary_color"
                     android:textSize="14sp"
@@ -114,7 +128,9 @@
                     android:id="@+id/app_category_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="16dp"
-                    android:contentDescription="@string/ratings"
+                    android:importantForAccessibility="no"
+                    android:paddingStart="2dp"
+                    android:paddingLeft="2dp"
                     android:src="@drawable/ic_user_messages"
                     app:tint="?text_secondary_color" />
 
@@ -123,8 +139,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="16dp"
                     android:contentDescription="@string/open_source"
-                    android:paddingStart="-4dp"
-                    android:paddingLeft="-4dp"
+                    android:paddingStart="2dp"
+                    android:paddingLeft="2dp"
                     android:src="@drawable/ic_open_source"
                     app:tint="?text_secondary_color" />
 
@@ -133,8 +149,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="16dp"
                     android:contentDescription="@string/abi_incompatible"
-                    android:paddingStart="-4dp"
-                    android:paddingLeft="-4dp"
+                    android:paddingStart="2dp"
+                    android:paddingLeft="2dp"
                     android:src="@drawable/ic_alert_circle"
                     android:visibility="gone"
                     app:tint="@color/abi_incompatible_color"
@@ -164,9 +180,9 @@
                     android:id="@+id/rating_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="16dp"
-                    android:contentDescription="@string/ratings"
-                    android:paddingStart="-3dp"
-                    android:paddingLeft="-3dp"
+                    android:importantForAccessibility="no"
+                    android:paddingStart="2dp"
+                    android:paddingLeft="2dp"
                     android:paddingEnd="4dp"
                     android:paddingRight="4dp"
                     android:src="@drawable/ic_star_smooth"
@@ -187,11 +203,11 @@
                     android:id="@+id/downloads_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="16dp"
-                    android:contentDescription="@string/downloads"
+                    android:importantForAccessibility="no"
                     android:paddingStart="4dp"
                     android:paddingLeft="4dp"
-                    android:paddingEnd="-4dp"
-                    android:paddingRight="-4dp"
+                    android:paddingEnd="2dp"
+                    android:paddingRight="2dp"
                     android:src="@drawable/ic_download_smooth"
                     app:tint="?text_secondary_color" />
 
@@ -228,8 +244,8 @@
                         android:importantForAccessibility="no"
                         android:paddingStart="4dp"
                         android:paddingLeft="4dp"
-                        android:paddingEnd="-4dp"
-                        android:paddingRight="-4dp"
+                        android:paddingEnd="2dp"
+                        android:paddingRight="2dp"
                         android:src="@drawable/ic_pill_ok"
                         app:tint="?text_secondary_color" />
 
@@ -259,7 +275,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:background="?selectableItemBackgroundBorderless"
-            android:importantForAccessibility="no"
+            android:contentDescription="@string/app_name"
             android:padding="12dp"
             android:src="@drawable/ic_dots_vertical"
             android:visibility="gone"

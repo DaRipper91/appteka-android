@@ -75,29 +75,28 @@ class HomeActivity : AppCompatActivity(), HomePresenter.HomeRouter {
         }
     }
 
+    private var currentTabIndex: Int = -1
+
     override fun showStoreFragment() {
-        val fragment = getOrCreateFragment(INDEX_STORE) { createStoreFragment() }
-        replaceFragment(fragment, INDEX_STORE)
+        switchTab(INDEX_STORE) { createStoreFragment() }
     }
 
     override fun showFeedFragment() {
-        val fragment = getOrCreateFragment(INDEX_FEED) { createFeedFragment() }
-        replaceFragment(fragment, INDEX_FEED)
+        switchTab(INDEX_FEED) { createFeedFragment() }
     }
 
     override fun showTopicsFragment() {
-        val fragment = getOrCreateFragment(INDEX_DISCUSS) { createTopicsFragment() }
-        replaceFragment(fragment, INDEX_DISCUSS)
+        switchTab(INDEX_DISCUSS) { createTopicsFragment() }
     }
 
     override fun showProfileFragment() {
-        val fragment = getOrCreateFragment(INDEX_PROFILE) { createProfileFragment() }
-        replaceFragment(fragment, INDEX_PROFILE)
+        switchTab(INDEX_PROFILE) { createProfileFragment() }
     }
 
     fun invalidateFragment(data: Intent?) {
         val pendingRunnable = Runnable {
-            val fragment = supportFragmentManager.findFragmentById(R.id.frame) as? HomeFragment
+            val currentTag = "fragment$currentTabIndex"
+            val fragment = supportFragmentManager.findFragmentByTag(currentTag) as? HomeFragment
             fragment?.handleEvent(data)
         }
         handler.post(pendingRunnable)
@@ -143,45 +142,46 @@ class HomeActivity : AppCompatActivity(), HomePresenter.HomeRouter {
         startActivity(intent)
     }
 
-    private fun getOrCreateFragment(index: Int, creator: () -> Fragment): Fragment {
-        return supportFragmentManager.findFragmentByTag("fragment$index") ?: let {
-            creator.invoke()
-        }
-    }
+    private fun switchTab(targetIndex: Int, creator: () -> Fragment) {
+        if (currentTabIndex == targetIndex) return
+        if (isFinishing) return
 
-    private fun replaceFragment(fragment: Fragment, index: Int) {
-        val tag = "fragment$index"
-        // Returning from another screen re-binds the current tab, and so
-        // does every status load. Replacing the fragment with itself
-        // would throw away its list position and blink the app bar
-        // through a lift reset each time.
-        if (supportFragmentManager.findFragmentById(R.id.frame)?.tag == tag) return
+        val targetTag = "fragment$targetIndex"
+        val transaction = supportFragmentManager.beginTransaction().setCustomAnimations(0, 0)
 
-        pendingFragmentRunnable?.let { handler.removeCallbacks(it) }
-        val runnable = Runnable {
-            if (!isFinishing && !supportFragmentManager.isStateSaved) {
-                supportFragmentManager
-                    .beginTransaction()
-                    .setCustomAnimations(0, 0)
-                    .replace(R.id.frame, fragment, tag)
-                    .commitAllowingStateLoss()
-                resetAppBarLift()
+        if (currentTabIndex != -1) {
+            val currentTag = "fragment$currentTabIndex"
+            supportFragmentManager.findFragmentByTag(currentTag)?.let { currentFrag ->
+                transaction.hide(currentFrag)
+                transaction.setMaxLifecycle(currentFrag, androidx.lifecycle.Lifecycle.State.STARTED)
             }
         }
-        pendingFragmentRunnable = runnable
-        handler.post(runnable)
+
+        var targetFragment = supportFragmentManager.findFragmentByTag(targetTag)
+        if (targetFragment == null) {
+            targetFragment = creator.invoke()
+            transaction.add(R.id.frame, targetFragment, targetTag)
+        } else {
+            transaction.show(targetFragment)
+        }
+        transaction.setMaxLifecycle(targetFragment, androidx.lifecycle.Lifecycle.State.RESUMED)
+        transaction.commitNowAllowingStateLoss()
+
+        currentTabIndex = targetIndex
+        window.decorView.post { resetAppBarLift() }
     }
 
-    /**
-     * The tabs share one app bar, so a tab left scrolled would hand the
-     * next one a lifted bar over content sitting at the top. The bar
-     * also caches the view it watches, and that view belongs to the
-     * outgoing fragment — re-setting the id drops the stale reference so
-     * the incoming list is found instead.
-     */
     private fun resetAppBarLift() {
-        val appBar = findViewById<AppBarLayout>(R.id.app_bar_layout)
-        appBar.liftOnScrollTargetViewId = R.id.recycler
+        if (isFinishing || isDestroyed) return
+        val appBar = findViewById<AppBarLayout>(R.id.app_bar_layout) ?: return
+        val currentTag = "fragment$currentTabIndex"
+        val activeFragment = supportFragmentManager.findFragmentByTag(currentTag)
+        val recycler = activeFragment?.view?.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler)
+        if (recycler != null) {
+            appBar.liftOnScrollTargetViewId = recycler.id
+        } else {
+            appBar.liftOnScrollTargetViewId = android.view.View.NO_ID
+        }
         appBar.setLifted(false)
     }
 
@@ -250,7 +250,8 @@ class HomeActivity : AppCompatActivity(), HomePresenter.HomeRouter {
     }
 
     override fun onTabReselected() {
-        val fragment = supportFragmentManager.findFragmentById(R.id.frame) as? HomeFragment
+        val currentTag = "fragment$currentTabIndex"
+        val fragment = supportFragmentManager.findFragmentByTag(currentTag) as? HomeFragment
         fragment?.onReselect()
     }
 

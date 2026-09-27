@@ -22,6 +22,7 @@ class AppItemPresenter(
         view.setIcon(item.icon)
         view.setTitle(item.title)
         view.setVersion(item.version)
+        view.setDescription(item.description)
         view.setSize(item.size)
         view.setRating(item.rating.takeIf { it > 0 })
         view.setDownloads(item.downloads)
@@ -57,6 +58,19 @@ class AppItemPresenter(
         view.setCategory(item.category)
         if (item.openSource) view.showOpenSourceBadge() else view.hideOpenSourceBadge()
         if (!item.isAbiCompatible) view.showAbiIncompatibleBadge() else view.hideAbiIncompatibleBadge()
+
+        val a11ySummary = buildString {
+            append(item.title)
+            append(", version ").append(item.version)
+            item.category?.let { append(", category ").append(it.title) }
+            if (item.rating > 0) append(", rating ").append(item.rating)
+            append(", ").append(item.downloads).append(" downloads")
+            if (item.openSource) append(", open source")
+            if (statusText.isNotEmpty()) append(", ").append(statusText)
+            item.description?.let { if (it.isNotBlank()) append(". ").append(it) }
+        }
+        view.setA11yDescription(a11ySummary)
+
         view.setClickable(clickable)
         if (clickable) {
             view.setOnClickListener { listener.onItemClick(item) }
